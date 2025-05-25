@@ -1,0 +1,26 @@
+FROM ${REGISTRY:-opea}/tts:${TAG:-latest}
+
+USER root
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    python3-dev \
+    build-essential \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Remove existing jax and jaxlib
+RUN pip uninstall -y jax jaxlib
+
+# Install CPU-only version of jax and jaxlib
+ENV JAXLIB_NO_GPU_SUPPORT=1
+ENV TF_CPP_MIN_LOG_LEVEL=0
+ENV XLA_FLAGS="--xla_cpu_enable_fast_math=false"
+
+RUN pip install --no-cache-dir \
+    --upgrade pip \
+    "jax[cpu]" \
+    --no-deps \
+    --force-reinstall
+
+USER user 

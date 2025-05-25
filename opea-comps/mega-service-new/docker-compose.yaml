@@ -15,7 +15,9 @@ services:
   #  ipc: host
   #  restart: always
   speecht5-service:
-    image: ${REGISTRY:-opea}/speecht5:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile.speecht5
     container_name: speecht5-service
     ports:
       - ${SPEECHT5_PORT:-7055}:7055
@@ -24,6 +26,9 @@ services:
       no_proxy: ${no_proxy}
       http_proxy: ${http_proxy}
       https_proxy: ${https_proxy}
+      XLA_FLAGS: "--xla_cpu_enable_fast_math=false"
+      JAX_PLATFORM_NAME: "cpu"
+      JAX_ENABLE_X64: "True"
     networks:
       - megaservice_network
     restart: unless-stopped
@@ -33,7 +38,9 @@ services:
       timeout: 6s
       retries: 18  
   tts-speecht5:
-    image: ${REGISTRY:-opea}/tts:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile.tts
     container_name: tts-speecht5-service
     ports:
       - ${TTS_PORT:-9088}:9088
@@ -41,6 +48,9 @@ services:
     environment:
       TTS_ENDPOINT: http://speecht5-service:7055
       TTS_COMPONENT_NAME: ${TTS_COMPONENT_NAME:-OPEA_SPEECHT5_TTS}
+      XLA_FLAGS: "--xla_cpu_enable_fast_math=false"
+      JAX_PLATFORM_NAME: "cpu"
+      JAX_ENABLE_X64: "True"
     networks:
       - megaservice_network
     depends_on:
